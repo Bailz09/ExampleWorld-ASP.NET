@@ -11,6 +11,7 @@ namespace ExampleWorld.Models
         public string Name { get; set; } = String.Empty;
 
         [StringLength(1000)]
+        public string? Description { get; set; } = String.Empty;
 
         //Relationship with Products and place to store products in the Department instance
         public virtual ICollection<Product>? Products { get; set; }
