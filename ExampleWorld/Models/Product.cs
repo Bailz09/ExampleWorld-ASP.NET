@@ -4,6 +4,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ExampleWorld.Models
 {
+
+    public enum ProductWeightUnit
+    {
+        GRAMS,
+        KILOGRAMS,
+        POUNDS,
+        OUNCES,
+        LITRES,
+        UNITS,
+    }
     public class Product
     {
         [Key] //data annotation (species this is a primary key)
@@ -26,6 +36,13 @@ namespace ExampleWorld.Models
         [Range(0.01, 999999.99)]
         [DataType(DataType.Currency)]
         public decimal MSRP { get; set; } = 0.01M;
+
+        [Required]
+        [Range(0.01, 999999.99)]
+        public decimal Weight { get; set; } = 0.01M;
+
+        [Required]
+        public ProductWeightUnit WeightUnit { get; set; } = ProductWeightUnit.UNITS; 
 
         [ForeignKey("DepartmentId")]
         public virtual Department? Department { get; set; }//creates the association to departments
