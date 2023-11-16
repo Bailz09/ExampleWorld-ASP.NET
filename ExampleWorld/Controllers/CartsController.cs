@@ -1,25 +1,27 @@
 using ExampleWorld.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
+using ExampleWorld.Services;
+
 
 namespace ExampleWorld.Controllers
 {
     public class CartsController : Controller
     {
-        private readonly string _cartSessionKey;
-        private readonly ApplicationDbContext _context;
 
-        public CartsController(ApplicationDbContext context)
+        private readonly ApplicationDbContext _context;
+        private readonly CartService _cartService;
+
+        public CartsController(CartService cartService, ApplicationDbContext context)
         {
-            _cartSessionKey = "Cart";
             _context = context;
+            _cartService = cartService;
         }
 
         public async Task<IActionResult> Index()
         {
             // Get our cart (or get a new cart if it doesn't exist)
-            var cart = GetCart();
+            var cart = _cartService.GetCart();
 
             if (cart == null)
             {
@@ -40,19 +42,20 @@ namespace ExampleWorld.Controllers
                         .Include(p => p.Department)
                         .FirstOrDefaultAsync(p => p.Id == cartItem.ProductId);
 
-                    if (product != null) {
+                    if (product != null)
+                    {
                         cartItem.Product = product;
                     }
                 }
             }
-            
+
             return View(cart);
         }
 
         [HttpPost]
         public async Task<IActionResult> AddToCart(int productId, int quantity)
         {
-            var cart = GetCart();
+            var cart = _cartService.GetCart();
 
             if (cart == null)
             {
@@ -79,23 +82,31 @@ namespace ExampleWorld.Controllers
                 cart.CartItems.Add(cartItem);
             }
 
-            SaveCart(cart);
+            _cartService.SaveCart(cart);
 
             return RedirectToAction("Index");
         }
 
-        private Cart? GetCart()
+        [HttpPost]
+        public IActionResult RemoveFromCart(int productId)
         {
-            var cartJson = HttpContext.Session.GetString(_cartSessionKey);
+            var cart = _cartService.GetCart();
 
-            return cartJson == null ? new Cart() : JsonConvert.DeserializeObject<Cart>(cartJson);
-        }
+            if (cart == null)
+            {
+                return NotFound();
+            }
 
-        private void SaveCart(Cart cart)
-        {
-            var cartJson = JsonConvert.SerializeObject(cart);
+            var cartItem = cart.CartItems.Find(cartItem => cartItem.ProductId == productId);
 
-            HttpContext.Session.SetString(_cartSessionKey, cartJson);
+            if (cartItem != null)
+            {
+                cart.CartItems.Remove(cartItem);
+
+                _cartService.SaveCart(cart);
+            }
+
+            return RedirectToAction("Index");
         }
     }
 }

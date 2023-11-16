@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ExampleWorld.Models;
 using Microsoft.AspNetCore.Identity;
+using ExampleWorld.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>()
 
 builder.Services.AddTransient<DbInitializer>();
 
+builder.Services.AddScoped<CartService>();
 
 var app = builder.Build();
 
